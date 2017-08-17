@@ -49,7 +49,7 @@ public class HistogramTransformer {
 
 		FileWriter variableWriter = new FileWriter(new File(VARIABLE_HISTOGRAM_FILE_PATH));
 		CSVPrinter variableCsvPrinter = new CSVPrinter(variableWriter, CSVFormat.EXCEL.withDelimiter(','));
-		variableCsvPrinter.printRecord("processInstanceId", "variableName", "value");
+		variableCsvPrinter.printRecord("processInstanceId", "variableName", "variableValue");
 
 		do
 		{
