@@ -1,11 +1,8 @@
 library(shiny)
 
-shinyUI(pageWithSidebar(
+shinyUI(fluidPage(
 
-  headerPanel("Outlier Analysis"),
-
-  sidebarPanel(
-  ),
+  titlePanel("Outlier Analysis"),
 
   mainPanel(
     selectInput("activity", "Activity Id:", activityIds),
