@@ -1,6 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(lubridate)
+library(dplyr)
 
 # Define server logic required to plot various variables against mpg
 shinyServer(function(input, output, session) {
@@ -38,12 +39,14 @@ shinyServer(function(input, output, session) {
 
     allVals = rbind(allInstanceVals, selectedInstanceVals)
 
-    ggplot(allVals, aes(x=variableValue, group=group, fill=as.factor(group))) +
-      geom_histogram(data=allVals, stat='count', position="dodge", aes(
-      y=c(..count..[..group..==1]/sum(..count..[..group..==1]),
-                         ..count..[..group..==2]/sum(..count..[..group..==2]))*100)) +
-      ylab('Percentage in Group') +
-      geom_text(aes(label = ..count.., y= ..prop..), stat= "count", position = 'dodge', vjust = -.5) +
+    agg <- allVals %>%
+      group_by(group, variableValue) %>%
+      summarise(freq = n()) %>%
+      mutate(percentage = freq * 100 / sum(freq) )
+
+    ggplot(agg, aes(x=variableValue, y=percentage, group=group)) +
+      geom_col(aes(fill=group), position='dodge') +
+      geom_text(aes(label=freq, y=5), position = position_dodge(0.9)) +
       ylim(0, 100)
     })
 
