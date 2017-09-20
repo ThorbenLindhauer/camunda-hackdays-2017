@@ -6,7 +6,7 @@ library(dplyr)
 # Define server logic required to plot various variables against mpg
 shinyServer(function(input, output, session) {
 
-  valuesByVarName <- function(varName, activity, minDuration = 0, maxDuration = 2147483647) {
+  valuesByVarName <- function(varName, activity, minDurationDays = 0, maxDurationDays = 2147483647) {
     if (is.null(varName)) {
       varName <- "undefined"
     }
@@ -15,8 +15,8 @@ shinyServer(function(input, output, session) {
 
     processInstancesInDuration <- subset(durations,
       activityId == activity &
-      duration >= minDuration &
-      duration <= maxDuration)
+      duration >= minDurationDays &
+      duration <= maxDurationDays)
 
     joinedValues <- merge(variablesWithName,    processInstancesInDuration, by = "processInstanceId")
 
@@ -24,17 +24,17 @@ shinyServer(function(input, output, session) {
   }
 
   durationsByActivity <- function(activity) {
-    return(durations[durations$activityId == activity, ]$duration)
+    return(durations[durations$activityId == activity, ])
   }
 
   output$variable_histogram <- renderPlot({
 
     allInstanceVals <- valuesByVarName(input$variable, input$activity)
-    group <- rep(c('all instances'), each = nrow(allInstanceVals))
+    group <- rep(c('All Instances'), each = nrow(allInstanceVals))
     allInstanceVals <- cbind(allInstanceVals, group)
 
     selectedInstanceVals <- valuesByVarName(input$variable, input$activity, input$duration[1], input$duration[2])
-    group <- rep(c('selected instances'), each = nrow(selectedInstanceVals))
+    group <- rep(c('Selected Instances'), each = nrow(selectedInstanceVals))
     selectedInstanceVals <- cbind(selectedInstanceVals, group)
 
     allVals = rbind(allInstanceVals, selectedInstanceVals)
@@ -47,28 +47,31 @@ shinyServer(function(input, output, session) {
     ggplot(agg, aes(x=variableValue, y=percentage, group=group)) +
       geom_col(aes(fill=group), position='dodge') +
       geom_text(aes(label=freq, y=5), position = position_dodge(0.9)) +
-      ylim(0, 100)
+      scale_y_continuous(name="Percentage of Instances") +
+      coord_cartesian(ylim=c(0, 100)) +
+      scale_x_discrete(name="Variable Value") +
+      #labs(colour = "Selection")
+      guides(fill=guide_legend(title="Selection"))
     })
 
   output$duration_histogram <- renderPlot({
-    minDuration <- input$duration[1]
-    maxDuration <- input$duration[2]
-
     activityInstances <- subset(durations,
       activityId == input$activity &
-      duration >= minDuration &
-      duration <= maxDuration)
+      durationInDays >= input$duration[1] &
+      durationInDays <= input$duration[2])
 
     ggplot(activityInstances) +
-      geom_histogram(show.legend=FALSE, aes(x=duration, fill='red')) +
-      scale_x_time()
+      geom_histogram(show.legend=FALSE, bins=30, aes(x=durationInDays, fill='red')) +
+      scale_x_continuous(name="Duration (Days)") +
+      scale_y_continuous(name="Number Of Instances")
   })
 
   observe({
-    durations = durationsByActivity(input$activity)
+    durations <- durationsByActivity(input$activity)
+    durationInDays <- durations$durationInDays
 
-    maxDuration <- max(durations)
-    minDuration <- min(durations)
+    maxDuration <- ceiling_dec(max(durationInDays), 1)
+    minDuration <- floor_dec(min(durationInDays), 1)
 
     updateSliderInput(session, "duration", max=maxDuration, min=minDuration, value=c(minDuration, maxDuration))
   })
