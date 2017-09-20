@@ -60,7 +60,7 @@ shinyServer(function(input, output, session) {
       duration <= maxDuration)
 
     ggplot(activityInstances) +
-      geom_histogram(aes(x=duration, fill='red')) +
+      geom_histogram(show.legend=FALSE, aes(x=duration, fill='red')) +
       scale_x_time()
   })
 
