@@ -18,8 +18,8 @@ shinyServer(function(input, output, session) {
 
     processInstancesInDuration <- subset(durations,
       activityId == activity &
-      duration >= minDurationDays &
-      duration <= maxDurationDays)
+      durationInDays >= minDurationDays &
+      durationInDays <= maxDurationDays)
 
     joinedValues <- merge(variablesWithName,    processInstancesInDuration, by = "processInstanceId")
 
