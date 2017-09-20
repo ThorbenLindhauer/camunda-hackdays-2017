@@ -53,7 +53,9 @@ public class ProcessInstanceStartTimeExtractor {
 
 				Map<String, Object> instance = hit.getSourceAsMap();
 				Date date = sdf.parse((String)instance.get("startDate"));
-				csvPrinter.printRecord(instance.get("processDefinitionKey"), instance.get("processInstanceId"), date.getTime());
+				SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+
+				csvPrinter.printRecord(instance.get("processDefinitionKey"), instance.get("processInstanceId"), sdf2.format(date));
 			}
 			
 			response = client.prepareSearchScroll(response.getScrollId()).setScroll(timeout).get();

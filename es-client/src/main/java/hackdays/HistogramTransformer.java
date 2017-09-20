@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -82,7 +84,10 @@ public class HistogramTransformer {
 		for (Map<String, Object> activityInstance : activityInstances)
     {
 			String activityId = (String) activityInstance.get("activityId");
-			if (activityId.startsWith("ExclusiveGateway") || activityId.startsWith("StartEvent") || activityId.startsWith("EndEvent")) {
+			if (activityId.startsWith("ExclusiveGateway") ||
+				activityId.startsWith("StartEvent") ||
+				activityId.startsWith("EndEvent") ||
+				activityId.startsWith("Task")) {
 				continue;
 			}
 			long duration = ((Number) activityInstance.get("durationInMs")).longValue();
@@ -92,12 +97,25 @@ public class HistogramTransformer {
 
 	private static void extractVariableValues(CSVPrinter variableCsvPrinter, Map<String, Object> instance, String variableType) throws IOException {
 		List<Map<String, Object>> stringVariables = (List<Map<String, Object>>) instance.get(variableType);
+		Set<String> allowedVariableNames = createAllowedVariableNames();
 		for (Map<String, Object> stringVariable : stringVariables) {
       String variableName = (String) stringVariable.get("name");
       Object variableValue = stringVariable.get("value");
-
-      variableCsvPrinter.printRecord(instance.get("processInstanceId"), variableName, variableValue);
+      if (allowedVariableNames.contains(variableName)) {
+				variableCsvPrinter.printRecord(instance.get("processInstanceId"), variableName, variableValue);
+			}
     }
+	}
+
+	private static Set<String> createAllowedVariableNames() {
+		Set<String> allowedVariableNames = new HashSet<>();
+		allowedVariableNames.add("Position");
+		allowedVariableNames.add("SalaryExpectation");
+		allowedVariableNames.add("Department");
+		allowedVariableNames.add("JobExperienceLebel");
+		allowedVariableNames.add("DomesticType");
+		allowedVariableNames.add("CandidateCancelled");
+		return allowedVariableNames;
 	}
 
 
