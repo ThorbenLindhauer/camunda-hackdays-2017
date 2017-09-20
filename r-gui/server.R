@@ -68,8 +68,6 @@ shinyServer(function(input, output, session) {
       durationInDays >= input$duration[1] &
       durationInDays <= input$duration[2])
 
-    print(activityInstances)
-
     validate(
       need(nrow(activityInstances) != 0, "No data selected")
     )
