@@ -47,6 +47,10 @@ shinyServer(function(input, output, session) {
       summarise(freq = n()) %>%
       mutate(percentage = freq * 100 / sum(freq) )
 
+    validate(
+      need(nrow(agg) != 0, "No data selected")
+    )
+
     ggplot(agg, aes(x=variableValue, y=percentage, group=group)) +
       plotTheme +
       geom_col(aes(fill=group), position='dodge') +
@@ -58,10 +62,17 @@ shinyServer(function(input, output, session) {
     })
 
   output$duration_histogram <- renderPlot({
+
     activityInstances <- subset(durations,
       activityId == input$activity &
       durationInDays >= input$duration[1] &
       durationInDays <= input$duration[2])
+
+    print(activityInstances)
+
+    validate(
+      need(nrow(activityInstances) != 0, "No data selected")
+    )
 
     ggplot(activityInstances) +
       plotTheme +
