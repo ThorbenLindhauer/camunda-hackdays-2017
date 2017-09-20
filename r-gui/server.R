@@ -6,6 +6,9 @@ library(dplyr)
 # Define server logic required to plot various variables against mpg
 shinyServer(function(input, output, session) {
 
+  plotFontSize <- 18
+  plotTheme <- theme(text = element_text(size=plotFontSize))
+
   valuesByVarName <- function(varName, activity, minDurationDays = 0, maxDurationDays = 2147483647) {
     if (is.null(varName)) {
       varName <- "undefined"
@@ -45,12 +48,12 @@ shinyServer(function(input, output, session) {
       mutate(percentage = freq * 100 / sum(freq) )
 
     ggplot(agg, aes(x=variableValue, y=percentage, group=group)) +
+      plotTheme +
       geom_col(aes(fill=group), position='dodge') +
-      geom_text(aes(label=freq, y=5), position = position_dodge(0.9)) +
+      geom_text(aes(label=freq, y=5), position = position_dodge(0.9), size=7) +
       scale_y_continuous(name="Percentage of Instances") +
       coord_cartesian(ylim=c(0, 100)) +
       scale_x_discrete(name="Variable Value") +
-      #labs(colour = "Selection")
       guides(fill=guide_legend(title="Selection"))
     })
 
@@ -61,6 +64,7 @@ shinyServer(function(input, output, session) {
       durationInDays <= input$duration[2])
 
     ggplot(activityInstances) +
+      plotTheme +
       geom_histogram(show.legend=FALSE, bins=30, aes(x=durationInDays, fill='red')) +
       scale_x_continuous(name="Duration (Days)") +
       scale_y_continuous(name="Number Of Instances")
