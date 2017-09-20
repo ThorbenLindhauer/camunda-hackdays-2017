@@ -34,7 +34,7 @@ public class HistogramTransformer {
 		.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("localhost", 9300)));
 
 		BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
-			.must(QueryBuilders.termQuery("processDefinitionId", "leadQualification:46:3ce29e5a-1ec3-11e7-8ace-0aa2e56f42b1"));
+			.must(QueryBuilders.termQuery("processDefinitionKey", "hiring-demo"));
 
 		TimeValue timeout = new TimeValue(60000L);
 		SearchResponse response = client.prepareSearch("optimize").setTypes("process-instance")
@@ -81,10 +81,13 @@ public class HistogramTransformer {
 		List<Map<String, Object>> activityInstances = (List<Map<String, Object>>) instance.get("events");
 		for (Map<String, Object> activityInstance : activityInstances)
     {
-      long duration = ((Number) activityInstance.get("durationInMs")).longValue();
-      String activityId = (String) activityInstance.get("activityId");
-      durationCsvPrinter.printRecord(instance.get("processInstanceId"), activityId, duration);
-    }
+			String activityId = (String) activityInstance.get("activityId");
+			if (activityId.startsWith("ExclusiveGateway") || activityId.startsWith("StartEvent") || activityId.startsWith("EndEvent")) {
+				continue;
+			}
+			long duration = ((Number) activityInstance.get("durationInMs")).longValue();
+			durationCsvPrinter.printRecord(instance.get("processInstanceId"), activityId, duration);
+		}
 	}
 
 	private static void extractVariableValues(CSVPrinter variableCsvPrinter, Map<String, Object> instance, String variableType) throws IOException {

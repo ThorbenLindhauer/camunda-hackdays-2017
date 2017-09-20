@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,7 +26,9 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 public class ProcessInstanceStartTimeExtractor {
 
-	public static void main(String[] args) throws IOException {
+	static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+	public static void main(String[] args) throws IOException, ParseException {
 		TransportClient client = new PreBuiltTransportClient(Settings.EMPTY)
 		.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("127.0.0.1", 9300)));
 		
@@ -40,7 +44,7 @@ public class ProcessInstanceStartTimeExtractor {
 
 		Map<String, List<Long>> durationMap = new HashMap<>();
 		
-		FileWriter writer = new FileWriter(new File("C:\\camunda\\hackdays\\2017\\scripts\\instance-start-dates.csv"));
+		FileWriter writer = new FileWriter(new File("./instance-start-dates.csv"));
 		CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.EXCEL.withDelimiter(','));
 		csvPrinter.printRecord("processDefinitionKey", "processInstanceId", "startTime");
 		do
@@ -48,7 +52,8 @@ public class ProcessInstanceStartTimeExtractor {
 			for (SearchHit hit : response.getHits().getHits()) {
 
 				Map<String, Object> instance = hit.getSourceAsMap();
-				csvPrinter.printRecord(instance.get("processDefinitionKey"), instance.get("processInstanceId"), instance.get("startDate"));
+				Date date = sdf.parse((String)instance.get("startDate"));
+				csvPrinter.printRecord(instance.get("processDefinitionKey"), instance.get("processInstanceId"), date.getTime());
 			}
 			
 			response = client.prepareSearchScroll(response.getScrollId()).setScroll(timeout).get();

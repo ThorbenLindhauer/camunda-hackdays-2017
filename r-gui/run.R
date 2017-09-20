@@ -1,2 +1,2 @@
 library("shiny")
-runApp("./", port=8090)
+runApp("./", port=8050)

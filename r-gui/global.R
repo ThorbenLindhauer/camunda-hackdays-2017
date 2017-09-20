@@ -12,9 +12,9 @@ daysAsSeconds <- function(days) {
 floor_dec <- function(x, level=1) round(x - 5*10^(-level-1), level)
 ceiling_dec <- function(x, level=1) round(x + 5*10^(-level-1), level)
 
-durations <- read.csv("../../../data/duration_histogram.csv", header = TRUE)
+durations <- read.csv("../duration_histogram.csv", header = TRUE)
+variables <- read.csv("../variable_histogram.csv", header = TRUE)
 
-variables <- read.csv("../../../data/variable_histogram.csv", header = TRUE)
 
 durationInDays <- sapply(durations$duration, millisecondsAsDays)
 durations <- cbind(durations, durationInDays)

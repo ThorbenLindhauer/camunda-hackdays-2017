@@ -41,7 +41,7 @@ public class Foo {
 
 		Map<String, List<Long>> durationMap = new HashMap<>();
 		
-		FileWriter writer = new FileWriter(new File("C:\\camunda\\hackdays\\2017\\scripts\\UserTask_0abh7j4_outliers.csv"));
+		FileWriter writer = new FileWriter(new File("./duration_histogram.csv"));
 		CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.EXCEL.withDelimiter(','));
 		csvPrinter.printRecord("processInstanceId", "activityId", "duration");
 		do
@@ -55,11 +55,7 @@ public class Foo {
 					long duration = ((Number) activityInstance.get("durationInMs")).longValue();
 					String activityId = (String) activityInstance.get("activityId");
 					
-					if (duration > 500_000_000 && "UserTask_0abh7j4".equals(activityId))
-					{
 						csvPrinter.printRecord(instance.get("processInstanceId"), activityId, duration);
-					}
-//					put(durationMap, activityId, duration);
 				}
 			}
 			
@@ -67,16 +63,6 @@ public class Foo {
 		}
 		while (response.getHits().getHits().length != 0);
 		
-//		int i = 0;
-//		
-//		
-//		for (Map.Entry<String, List<Long>> activity : durationMap.entrySet())
-//		{
-//			for (Long duration : activity.getValue())
-//			{
-//			}
-//		}
-//		
 		csvPrinter.flush();
 		csvPrinter.close();
 		writer.close();
